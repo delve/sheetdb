@@ -11,6 +11,7 @@ import (
 
 	"github.com/delve/gsheets"
 	"golang.org/x/sync/errgroup"
+	"google.golang.org/api/option"
 )
 
 var modelSets = map[string][]model{}
@@ -45,18 +46,15 @@ type Client struct {
 }
 
 // New creates and returns a new client.
-func New(ctx context.Context, credentials, token, spreadsheetID string, opts ...ClientOption) (*Client, error) {
-	gsClient, err := gsheets.New(ctx, credentials, token, gsheets.ClientWritable())
+func New(ctx context.Context, spreadsheetID string, opts ...option.ClientOption) (*Client, error) {
+	gsClient, err := gsheets.New(ctx, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create gsheets client: %v", err)
+		return nil, fmt.Errorf("unable to create gsheets client: %v", err)
 	}
 	client := &Client{
 		gsClient:      gsClient,
 		spreadsheetID: spreadsheetID,
 		modelSetName:  "default",
-	}
-	for _, opt := range opts {
-		client = opt(client)
 	}
 	return client, nil
 }
@@ -66,7 +64,7 @@ func New(ctx context.Context, credentials, token, spreadsheetID string, opts ...
 // into the model set in order.
 func (c *Client) LoadData(ctx context.Context) error {
 	if c.gsClient == nil {
-		return errors.New("The client has not been created correctly")
+		return errors.New("the client has not been created correctly")
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
@@ -75,7 +73,7 @@ func (c *Client) LoadData(ctx context.Context) error {
 		eg.Go(func() (er error) {
 			defer func() {
 				if e := recover(); e != nil {
-					er = fmt.Errorf("Panic recovered in goroutine: %v", e)
+					er = fmt.Errorf("panic recovered in goroutine: %v", e)
 				}
 			}()
 
@@ -85,7 +83,7 @@ func (c *Client) LoadData(ctx context.Context) error {
 			}
 			logger.Infof("Loading from '%s' model", m.name)
 			if err := m.loadFunc(data); err != nil {
-				return fmt.Errorf("Unable to load '%s' data: %v", m.name, err)
+				return fmt.Errorf("unable to load '%s' data: %v", m.name, err)
 			}
 			return nil
 		})
@@ -97,7 +95,7 @@ func (c *Client) LoadData(ctx context.Context) error {
 // This function is usually called from generated code.
 func (c *Client) AsyncUpdate(data []gsheets.UpdateValue) error {
 	if c.gsClient == nil {
-		return errors.New("The client has not been created correctly")
+		return errors.New("the client has not been created correctly")
 	}
 	go func() {
 		defer func() {

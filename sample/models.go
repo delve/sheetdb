@@ -9,8 +9,8 @@ import (
 var dbClient *sheetdb.Client
 
 // Initialize initializes this package.
-func Initialize(ctx context.Context, credentials, token, spreadsheetID string) error {
-	client, err := sheetdb.New(ctx, credentials, token, spreadsheetID)
+func Initialize(ctx context.Context, spreadsheetID string) error {
+	client, err := sheetdb.New(ctx, spreadsheetID)
 	if err != nil {
 		return err
 	}

@@ -8,11 +8,11 @@ import (
 	"github.com/delve/sheetdb"
 )
 
-const (
-	tStr    string = "2019-07-07T00:00:00+01:00"
-	utcStr  string = "2019-07-07T00:00:00Z"
-	fullfmt string = "2006-01-02T15:04:05.000000000Z07:00"
-)
+// const (
+// 	tStr    string = "2019-07-07T00:00:00+01:00"
+// 	utcStr  string = "2019-07-07T00:00:00Z"
+// 	fullfmt string = "2006-01-02T15:04:05.000000000Z07:00"
+// )
 
 func TestNewDate(t *testing.T) {
 

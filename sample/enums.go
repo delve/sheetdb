@@ -18,14 +18,14 @@ const (
 // NewSex returns new Sex.
 func NewSex(sex string) (Sex, error) {
 	switch sex {
-	case "Male", "male", "MALE":
+	case "Male", "male", "MALE", "M":
 		return Male, nil
-	case "Female", "female", "FEMALE":
+	case "Female", "female", "FEMALE", "F":
 		return Female, nil
-	case "Unknown", "unknown", "UNKNOWN", "":
+	case "Unknown", "unknown", "UNKNOWN", "U", "":
 		return UnknownSex, nil
 	default:
-		return UnknownSex, errors.New("Invalid Sex")
+		return UnknownSex, errors.New("invalid Sex")
 	}
 }
 
