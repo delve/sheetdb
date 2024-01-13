@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/takuoki/sheetdb"
+	"github.com/delve/sheetdb"
 )
 
 const (

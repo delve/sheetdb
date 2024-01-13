@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/takuoki/gsheets"
-	"github.com/takuoki/sheetdb"
+	"github.com/delve/gsheets"
+	"github.com/delve/sheetdb"
 )
 
 const (

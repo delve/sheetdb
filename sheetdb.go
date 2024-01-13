@@ -9,7 +9,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/takuoki/gsheets"
+	"github.com/delve/gsheets"
 	"golang.org/x/sync/errgroup"
 )
 

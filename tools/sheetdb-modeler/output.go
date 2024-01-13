@@ -58,8 +58,8 @@ func (g *generator) outputImport(m model) {
 	g.Printf("\t\"sync\"\n")
 	g.Printf("\t\"time\"\n")
 	g.Printf("\n")
-	g.Printf("\t\"github.com/takuoki/gsheets\"\n")
-	g.Printf("\t\"github.com/takuoki/sheetdb\"\n")
+	g.Printf("\t\"github.com/delve/gsheets\"\n")
+	g.Printf("\t\"github.com/delve/sheetdb\"\n")
 	g.Printf(")\n\n")
 }
 

@@ -3,7 +3,7 @@ package sample
 import (
 	"context"
 
-	"github.com/takuoki/sheetdb"
+	"github.com/delve/sheetdb"
 )
 
 var dbClient *sheetdb.Client

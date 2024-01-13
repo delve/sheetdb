@@ -4,7 +4,7 @@ executors:
   go-112:
     docker:
       - image: circleci/golang:1.12
-    working_directory: /go/src/github.com/takuoki/sheetdb
+    working_directory: /go/src/github.com/delve/sheetdb
 
 jobs:
   build:

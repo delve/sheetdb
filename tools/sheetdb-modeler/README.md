@@ -25,7 +25,7 @@ A tool that automatically generates CRUD functions based on the defined model, G
 ## <a name='Installation'></a>Installation
 
 ```bash
-go get github.com/takuoki/sheetdb/tools/sheetdb-modeler
+go get github.com/delve/sheetdb/tools/sheetdb-modeler
 ```
 
 ## <a name='Howtowritemodels'></a>How to write models

@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/takuoki/gsheets"
-	"github.com/takuoki/sheetdb"
+	"github.com/delve/gsheets"
+	"github.com/delve/sheetdb"
 )
 
 var (

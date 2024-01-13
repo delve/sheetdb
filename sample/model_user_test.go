@@ -5,8 +5,8 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/takuoki/sheetdb"
-	"github.com/takuoki/sheetdb/sample"
+	"github.com/delve/sheetdb"
+	"github.com/delve/sheetdb/sample"
 )
 
 func TestLoadUser(t *testing.T) {
