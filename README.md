@@ -1,13 +1,11 @@
 # sheetdb
 
-[![CircleCI](https://circleci.com/gh/takuoki/sheetdb/tree/master.svg?style=shield&circle-token=9bbc178fd927c6b27f6d726ffd66e3d5deb06fcc)](https://circleci.com/gh/takuoki/sheetdb/tree/master)
-[![GoDoc](https://godoc.org/github.com/takuoki/sheetdb?status.svg)](https://godoc.org/github.com/takuoki/sheetdb)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat)](LICENSE)
 
 A golang package for using Google spreadsheets as a database instead of the actual database management system.
 
 **!!! Caution !!!**
-
+* This fork of github.com/takuoki/sheetdb is not intended for your use. It will not behave like you expect it to. Thar be dragonbugs here, and they won't be fixed. Go back to the original and use that instead.
 * Currently we are not measuring performance. It is intended for use in small applications where performance is not an issue.
 * The Google Sheets API has a [usage limit](https://developers.google.com/sheets/api/limits). Do not use this package for applications that require access beyond this usage limit.
 

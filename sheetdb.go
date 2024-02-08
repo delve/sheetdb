@@ -93,19 +93,23 @@ func (c *Client) LoadData(ctx context.Context) error {
 
 // AsyncUpdate applies updates to s spreadsheet asynchronously.
 // This function is usually called from generated code.
+// Even though it's called Async this function is a synchronous blocking call.
+// Because the original implementation DISCARDS ERRORS, and I can't be having that
+//   in a database implementation. If I retain sheetsdb and perf becomes an issue
+//   i'll look to plumb channels through here to communicate errors.
 func (c *Client) AsyncUpdate(data []gsheets.UpdateValue) error {
 	if c.gsClient == nil {
 		return errors.New("the client has not been created correctly")
 	}
-	go func() {
-		defer func() {
-			if e := recover(); e != nil {
-				logger.Errorf("Data could not be reflected on the sheet because an error occurred (err=%v, data=%+v)", e, data)
-			}
-		}()
-		if err := c.gsClient.BatchUpdate(context.Background(), c.spreadsheetID, data...); err != nil {
-			panic(fmt.Sprintf("Unable to update spreadsheet: %v", err))
-		}
-	}()
+	// go func() {
+	// 	defer func() {
+	// 		if e := recover(); e != nil {
+	// 			logger.Errorf("Data could not be reflected on the sheet because an error occurred (err=%v, data=%+v)", e, data)
+	// 		}
+	// 	}()
+	if err := c.gsClient.BatchUpdate(context.Background(), c.spreadsheetID, data...); err != nil {
+		return fmt.Errorf("unable to update spreadsheet: %v", err)
+	}
+	// }()
 	return nil
 }
