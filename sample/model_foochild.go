@@ -190,6 +190,39 @@ func FooChildSort(sortFunc func(fooChildren []*FooChild)) func(query *FooChildQu
 	}
 }
 
+// GetFooChildren returns all fooChildren.
+// If any options are specified, the result according to the specified option is returned.
+// If there are no fooChild to return, this function returns an nil array.
+// If the sort option is not specified, the order of fooChildren is random.
+func GetAllFooChildren(opts ...FooChildQueryOption) ([]*FooChild, error) {
+	query := &FooChildQuery{}
+	for _, opt := range opts {
+		query = opt(query)
+	}
+	_FooChild_mutex.RLock()
+	defer _FooChild_mutex.RUnlock()
+	var fooChildren []*FooChild
+	if query.filter != nil {
+		for _, v := range _FooChild_cache {
+			for _, w := range v {
+				if query.filter(w) {
+					fooChildren = append(fooChildren, w)
+				}
+			}
+		}
+	} else {
+		for _, v := range _FooChild_cache {
+			for _, w := range v {
+				fooChildren = append(fooChildren, w)
+			}
+		}
+	}
+	if query.sort != nil {
+		query.sort(fooChildren)
+	}
+	return fooChildren, nil
+}
+
 // GetFooChildren returns all fooChildren that foo has.
 // If any options are specified, the result according to the specified option is returned.
 // If there are no fooChild to return, this method returns an nil array.

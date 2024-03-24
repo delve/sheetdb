@@ -318,7 +318,7 @@ func TypeTestSort(sortFunc func(typeTests []*TypeTest)) func(query *TypeTestQuer
 // If any options are specified, the result according to the specified option is returned.
 // If there are no typeTest to return, this function returns an nil array.
 // If the sort option is not specified, the order of typeTests is random.
-func GetTypeTests(opts ...TypeTestQueryOption) ([]*TypeTest, error) {
+func GetAllTypeTests(opts ...TypeTestQueryOption) ([]*TypeTest, error) {
 	query := &TypeTestQuery{}
 	for _, opt := range opts {
 		query = opt(query)

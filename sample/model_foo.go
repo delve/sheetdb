@@ -170,6 +170,39 @@ func FooSort(sortFunc func(foos []*Foo)) func(query *FooQuery) *FooQuery {
 	}
 }
 
+// GetFoos returns all foos.
+// If any options are specified, the result according to the specified option is returned.
+// If there are no foo to return, this function returns an nil array.
+// If the sort option is not specified, the order of foos is random.
+func GetAllFoos(opts ...FooQueryOption) ([]*Foo, error) {
+	query := &FooQuery{}
+	for _, opt := range opts {
+		query = opt(query)
+	}
+	_Foo_mutex.RLock()
+	defer _Foo_mutex.RUnlock()
+	var foos []*Foo
+	if query.filter != nil {
+		for _, v := range _Foo_cache {
+			for _, w := range v {
+				if query.filter(w) {
+					foos = append(foos, w)
+				}
+			}
+		}
+	} else {
+		for _, v := range _Foo_cache {
+			for _, w := range v {
+				foos = append(foos, w)
+			}
+		}
+	}
+	if query.sort != nil {
+		query.sort(foos)
+	}
+	return foos, nil
+}
+
 // GetFoos returns all foos that user has.
 // If any options are specified, the result according to the specified option is returned.
 // If there are no foo to return, this method returns an nil array.
