@@ -402,19 +402,21 @@ func (g *generator) outputGetList(m model, o option) {
 	g.Printf("\t}\n")
 	g.Printf("}\n\n")
 
-	if m.Parent == nil {
-		g.Printf("// %[3]s%[1]s returns all %[2]s.\n", m.NamePlural, m.NameLowerPlural, method)
-		g.Printf("// If any options are specified, the result according to the specified option is returned.\n")
-		g.Printf("// If there are no %s to return, this function returns an nil array.\n", m.NameLower)
-		g.Printf("// If the sort option is not specified, the order of %s is random.\n", m.NameLowerPlural)
-		g.Printf("func %[4]s%[3]s(opts ...%[1]sQueryOption) ([]*%[2]s, error) {\n", modelName, m.Name, m.NamePlural, method)
-	} else {
-		g.Printf("// %[4]s%[1]s returns all %[2]s that %[3]s has.\n", m.NamePlural, m.NameLowerPlural, m.Parent.NameLower, method)
-		g.Printf("// If any options are specified, the result according to the specified option is returned.\n")
-		g.Printf("// If there are no %s to return, this method returns an nil array.\n", m.NameLower)
-		g.Printf("// If the sort option is not specified, the order of %s is random.\n", m.NameLowerPlural)
-		g.Printf("func (m *%[4]s) %[5]s%[3]s(opts ...%[1]sQueryOption) ([]*%[2]s, error) {\n", modelName, m.Name, m.NamePlural, m.Parent.Name, method)
-	}
+	//begin getAll<Type>s
+	// TODO: This does not handle multiple parents. consider fixing?
+	/*
+		This is due to the way the data is expressed in the local cache
+		EG granfather HAS A child HAS A grandchild becomes a map of map of map.
+		map[grandfatherID]map[childID]map[grandchildID]*grandchild
+
+		more parents makes different data type. to fix would require climbing up
+		the whole tree to see how many branches there are
+	*/
+	g.Printf("// %[3]s%[1]s returns all %[2]s.\n", m.NamePlural, m.NameLowerPlural, method)
+	g.Printf("// If any options are specified, the result according to the specified option is returned.\n")
+	g.Printf("// If there are no %s to return, this function returns an nil array.\n", m.NameLower)
+	g.Printf("// If the sort option is not specified, the order of %s is random.\n", m.NameLowerPlural)
+	g.Printf("func %[4]sAll%[3]s(opts ...%[1]sQueryOption) ([]*%[2]s, error) {\n", modelName, m.Name, m.NamePlural, method)
 
 	g.Printf("\tquery := &%[1]sQuery{}\n", modelName)
 	g.Printf("\tfor _, opt := range opts {\n")
@@ -424,26 +426,33 @@ func (g *generator) outputGetList(m model, o option) {
 	g.Printf("\tdefer _%s_mutex.RUnlock()\n", m.Name)
 	g.Printf("\tvar %[2]s []*%[1]s\n", m.Name, m.NameLowerPlural)
 	g.Printf("\tif query.filter != nil {\n")
+	g.Printf("\t\tfor _, v := range _%s_cache {\n", m.Name)
 
-	if m.Parent == nil {
-		g.Printf("\t\tfor _, v := range _%s_cache {\n", m.Name)
+	if m.Parent != nil {
+		g.Printf("\t\t\tfor _, w := range v {\n")
+		g.Printf("\t\t\t\tif query.filter(w) {\n")
+		g.Printf("\t\t\t\t\t%[1]s = append(%[1]s, w)\n", m.NameLowerPlural)
+		g.Printf("\t\t\t\t}\n")
+		g.Printf("\t\t\t}\n")
 	} else {
-		g.Printf("\t\tfor _, v := range _%s_cache[%s] {\n", m.Name, strings.Join(prefixes(m.Parent.PkNames, "m."), "]["))
+		g.Printf("\t\t\tif query.filter(v) {\n")
+		g.Printf("\t\t\t\t%[1]s = append(%[1]s, v)\n", m.NameLowerPlural)
+		g.Printf("\t\t\t}\n")
+
 	}
 
-	g.Printf("\t\t\tif query.filter(v) {\n")
-	g.Printf("\t\t\t\t%[1]s = append(%[1]s, v)\n", m.NameLowerPlural)
-	g.Printf("\t\t\t}\n")
 	g.Printf("\t\t}\n")
+
 	g.Printf("\t} else {\n")
+	g.Printf("\t\tfor _, v := range _%s_cache {\n", m.Name)
 
-	if m.Parent == nil {
-		g.Printf("\t\tfor _, v := range _%s_cache {\n", m.Name)
+	if m.Parent != nil {
+		g.Printf("\t\t\tfor _, w := range v {\n")
+		g.Printf("\t\t\t\t%[1]s = append(%[1]s, w)\n", m.NameLowerPlural)
+		g.Printf("\t\t\t}\n")
 	} else {
-		g.Printf("\t\tfor _, v := range _%s_cache[%s] {\n", m.Name, strings.Join(prefixes(m.Parent.PkNames, "m."), "]["))
+		g.Printf("\t\t\t%[1]s = append(%[1]s, v)\n", m.NameLowerPlural)
 	}
-
-	g.Printf("\t\t\t%[1]s = append(%[1]s, v)\n", m.NameLowerPlural)
 	g.Printf("\t\t}\n")
 	g.Printf("\t}\n")
 	g.Printf("\tif query.sort != nil {\n")
@@ -451,7 +460,46 @@ func (g *generator) outputGetList(m model, o option) {
 	g.Printf("\t}\n")
 	g.Printf("\treturn %s, nil\n", m.NameLowerPlural)
 	g.Printf("}\n\n")
+	//end getAll<Type>s
 
+	//begin <parentType> get<Type>s by parent
+	if m.Parent != nil {
+		g.Printf("// %[4]s%[1]s returns all %[2]s that %[3]s has.\n", m.NamePlural, m.NameLowerPlural, m.Parent.NameLower, method)
+		g.Printf("// If any options are specified, the result according to the specified option is returned.\n")
+		g.Printf("// If there are no %s to return, this method returns an nil array.\n", m.NameLower)
+		g.Printf("// If the sort option is not specified, the order of %s is random.\n", m.NameLowerPlural)
+		g.Printf("func (m *%[4]s) %[5]s%[3]s(opts ...%[1]sQueryOption) ([]*%[2]s, error) {\n", modelName, m.Name, m.NamePlural, m.Parent.Name, method)
+		g.Printf("\tquery := &%[1]sQuery{}\n", modelName)
+		g.Printf("\tfor _, opt := range opts {\n")
+		g.Printf("\t\tquery = opt(query)\n")
+		g.Printf("\t}\n")
+		g.Printf("\t_%s_mutex.RLock()\n", m.Name)
+		g.Printf("\tdefer _%s_mutex.RUnlock()\n", m.Name)
+		g.Printf("\tvar %[2]s []*%[1]s\n", m.Name, m.NameLowerPlural)
+		g.Printf("\tif query.filter != nil {\n")
+
+		g.Printf("\t\tfor _, v := range _%s_cache[%s] {\n", m.Name, strings.Join(prefixes(m.Parent.PkNames, "m."), "]["))
+
+		g.Printf("\t\t\tif query.filter(v) {\n")
+		g.Printf("\t\t\t\t%[1]s = append(%[1]s, v)\n", m.NameLowerPlural)
+		g.Printf("\t\t\t}\n")
+		g.Printf("\t\t}\n")
+		g.Printf("\t} else {\n")
+
+		g.Printf("\t\tfor _, v := range _%s_cache[%s] {\n", m.Name, strings.Join(prefixes(m.Parent.PkNames, "m."), "]["))
+
+		g.Printf("\t\t\t%[1]s = append(%[1]s, v)\n", m.NameLowerPlural)
+		g.Printf("\t\t}\n")
+		g.Printf("\t}\n")
+		g.Printf("\tif query.sort != nil {\n")
+		g.Printf("\t\tquery.sort(%s)\n", m.NameLowerPlural)
+		g.Printf("\t}\n")
+		g.Printf("\treturn %s, nil\n", m.NameLowerPlural)
+		g.Printf("}\n\n")
+	}
+	//end <parentType> get<Type>s
+
+	//begin get<Type>s by parent
 	if m.Parent != nil {
 		g.Printf("// %[4]s%[1]s returns all %[2]s that %[3]s has.\n", m.NamePlural, m.NameLowerPlural, m.Parent.NameLower, method)
 		g.Printf("// If any options are specified, the result according to the specified option is returned.\n")
@@ -462,6 +510,7 @@ func (g *generator) outputGetList(m model, o option) {
 		g.Printf("\treturn m.%[2]s%[1]s(opts...)\n", m.NamePlural, method)
 		g.Printf("}\n\n")
 	}
+	//end get<Type>s by parent
 }
 
 func (g *generator) outputAdd(m model, o option) {
